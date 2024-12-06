@@ -1,3 +1,6 @@
+from aiogram import Bot, Dispatcher, html
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 import asyncio
 import logging
 import sys
@@ -6,38 +9,32 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message
 from aiohttp import ClientSession
 from dotenv import load_dotenv
+from aiogram.filters import CommandStart
 
 load_dotenv()
 TOKEN = getenv('TOKEN')
 API_KEY = getenv('API_KEY')
 
 dp = Dispatcher()
-logging.basicConfig(level=logging.INFO)
-bot = Bot(token=TOKEN)
 
-@dp.message(commands=["start"])
-async def start_command(message: Message):
+@dp.message(CommandStart())
+async def start_command_handler(message: Message)-> None:
     user_id = message.from_user.id
     username = message.from_user.username  
-    
-    payload = {"user_id": user_id, "username": username}
-
+    payload = { user_id: user_id,  username: username }
     async with ClientSession() as session:
-        try:
-            async with session.post(API_KEY, json=payload) as response:
-                if response.status == 200:
-                    reply = await response.json()
-                    await message.answer(f"Добро пожаловать, {username}!\nВы добавлены в очередь.\nВаш номер: {reply.get('queue_number')}")
-                else:
-                    await message.answer("Ошибка: не удалось зарегистрироваться в очереди. Попробуйте позже.")
-        except Exception as e:
-            logging.error(f"Ошибка при запросе к серверу: {e}")
-            await message.answer("Произошла ошибка при подключении к серверу.")
+        async with session.post(API_KEY, json=payload) as response:
+            if response.status == 200:
+                print(response.body())
+                reply = await response.json()
+                await message.answer(f"Добро пожаловать, {username}!\nВы добавлены в очередь.\nВаш номер: {reply.get('queue_number')}")
+            else:
+                await message.answer("Ошибка: не удалось зарегистрироваться в очереди. Попробуйте позже.")
 
-async def main():
-    dp.include_router(dp)
-    await bot.delete_webhook(drop_pending_updates=True)
+async def main() -> None:
+    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(main())
