@@ -11,6 +11,7 @@ from aiohttp import ClientSession
 from dotenv import load_dotenv
 from aiogram.filters import CommandStart
 import aiohttp
+
 load_dotenv()
 TOKEN = getenv('TOKEN')
 API_KEY = getenv('API_KEY')
@@ -28,7 +29,7 @@ async def start_command_handler(message: Message)-> None:
             if response.status == 200:
                 print(response.body())
                 reply = await response.json()
-                await message.answer(f"Добро пожаловать, {username}!\nВы добавлены в очередь.\nВаш номер: {reply.get('queue_number')}")
+                await message.answer(f"Добро пожаловать, {username}!\nВы добавлены в очередь.\nВаш номер: {reply.get('position')}")
             else:
                 await message.answer("Ошибка: не удалось зарегистрироваться в очереди. Попробуйте позже.")
 
