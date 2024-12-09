@@ -10,7 +10,7 @@ from aiogram.types import Message
 from aiohttp import ClientSession
 from dotenv import load_dotenv
 from aiogram.filters import CommandStart
-
+import aiohttp
 load_dotenv()
 TOKEN = getenv('TOKEN')
 API_KEY = getenv('API_KEY')
@@ -19,11 +19,12 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def start_command_handler(message: Message)-> None:
+    headers = {'TG-API-KEY': API_KEY}
     user_id = message.from_user.id
     username = message.from_user.username  
-    payload = { user_id: user_id,  username: username }
+    payload = { "user_id" : user_id,  "username" : username }
     async with ClientSession() as session:
-        async with session.post(API_KEY, json=payload) as response:
+        async with aiohttp.session.post( 'https://api.b33db57e.nip.io/student/', json=payload) as response:
             if response.status == 200:
                 print(response.body())
                 reply = await response.json()
