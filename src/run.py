@@ -26,10 +26,12 @@ async def start_command_handler(message: Message)-> None:
     payload = { "student_id" : str(user_id) ,  "notify" : True }
     print(payload)
     async with ClientSession() as session:
-        async with session.post( 'https://api.b33db57e.nip.io/api/v1/student/', json=payload, headers=headers) as response:
+        async with session.post( 'https://api.bf60e757.nip.io//api/v1/student/', json=payload, headers=headers) as response:
             if response.status == 200:
                 reply = await response.json()
                 await message.answer(f"Добро пожаловать!")
+            elif response.status == 409:
+                await message.answer(f"Добро пожаловать снова!")
             else:
                 print(response)
                 await message.answer("Ошибка: не удалось зарегистрироваться в очереди. Попробуйте позже.")
